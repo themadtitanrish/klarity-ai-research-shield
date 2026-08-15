@@ -15,20 +15,21 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from dotenv import load_dotenv
 from crewai import Agent, Task, Crew, Process, LLM
-from crewai_tools import SerperDevTool
+from crewai_tools import TavilySearchTool
 
 load_dotenv()
 
 # ---------- Set up the crew (same as before) ----------
 
 groq_llm = LLM(model="groq/llama-3.3-70b-versatile")
-search_tool = SerperDevTool()
+search_tool = TavilySearchTool()
 
 classifier = Agent(
     role="Topic Classifier",
     goal="Identify which academic or research field a given topic belongs to",
     backstory="An experienced research librarian skilled at identifying which domain a topic falls under.",
     llm=groq_llm
+    
 )
 
 finder = Agent(
@@ -36,7 +37,7 @@ finder = Agent(
     goal="Search the web and find relevant, high-quality sources on a given research topic",
     backstory="A skilled research assistant who finds the most relevant and reliable sources across all disciplines.",
     llm=groq_llm,
-    
+    tools=[search_tool]
 )
 
 credibility_checker = Agent(
@@ -123,4 +124,4 @@ def health_check():
 import uvicorn
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=8000) 
