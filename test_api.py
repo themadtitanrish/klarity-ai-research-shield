@@ -1,21 +1,15 @@
 import requests
 
-url = "https://klarity-v1-0b02b4f0-13f3-4131-a72f-967225ee-601fcbd6.crewai.com/kickoff"
-token = "6fdbe6dd5428"
+url = "https://klarity-ai-research-shield.onrender.com/validate"
 
-headers = {
-    "Authorization": f"Bearer {token}",
-    "Content-Type": "application/json"
-}
+topic = input("Enter your research topic: ")
 
 body = {
-    "inputs": {
-        "research_topic": "protein content in crickets"
-    }
+    "topic": topic
 }
 
-response = requests.post(url, headers=headers, json=body)
+response = requests.post(url, json=body)
 
-print("Status code:", response.status_code)
-print("Response:")
+print("\nStatus code:", response.status_code)
+print("\nKlarity result:")
 print(response.json())
