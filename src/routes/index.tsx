@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { useEffect, useRef, useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent, type ReactNode } from "react";
 import { Sparkles, Copy, Check, X, RotateCcw, History } from "lucide-react";
 import klarityLogo from "@/assets/klarity-logo.png.asset.json";
 import { validateTopic } from "@/lib/crewai.functions";
@@ -51,6 +51,38 @@ function scoreClasses(score: number) {
   if (score >= 8) return "text-score-high border-score-high/30 bg-score-high/10";
   if (score >= 6) return "text-score-mid border-score-mid/30 bg-score-mid/10";
   return "text-score-low border-score-low/25 bg-score-low/10";
+}
+
+const URL_RE = /https?:\/\/[^\s<>"]+/g;
+
+function renderWithLinks(text: string): ReactNode[] {
+  const nodes: ReactNode[] = [];
+  let lastIndex = 0;
+  let m: RegExpExecArray | null;
+  URL_RE.lastIndex = 0;
+  while ((m = URL_RE.exec(text)) !== null) {
+    if (m.index > lastIndex) nodes.push(text.slice(lastIndex, m.index));
+    let url = m[0];
+    const trailing = url.match(/[)\],.;:]+$/);
+    if (trailing) {
+      nodes.push(trailing[0]);
+      url = url.slice(0, -trailing[0].length);
+    }
+    nodes.push(
+      <a
+        key={`link-${nodes.length}`}
+        href={url}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="text-foreground underline decoration-foreground/40 underline-offset-2 transition-colors hover:decoration-foreground"
+      >
+        {url}
+      </a>,
+    );
+    lastIndex = m.index + m[0].length;
+  }
+  if (lastIndex < text.length) nodes.push(text.slice(lastIndex));
+  return nodes;
 }
 
 function parseRaw(raw: string): Parsed {
@@ -402,7 +434,7 @@ function Index() {
                 </button>
               </div>
               <p className="mt-4 whitespace-pre-wrap text-lg leading-relaxed text-foreground">
-                {result.summary}
+                {renderWithLinks(result.summary)}
               </p>
             </div>
           </section>
