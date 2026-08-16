@@ -3,7 +3,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { Sparkles, Copy, Check, X, RotateCcw, History } from "lucide-react";
 import klarityLogo from "@/assets/klarity-logo.png.asset.json";
-import { kickoffValidation, fetchValidationStatus } from "@/lib/crewai.functions";
+import { validateTopic } from "@/lib/crewai.functions";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -104,8 +104,7 @@ function Index() {
   const cancelRef = useRef(false);
   const resultsRef = useRef<HTMLDivElement | null>(null);
 
-  const kickoff = useServerFn(kickoffValidation);
-  const status = useServerFn(fetchValidationStatus);
+  const validate = useServerFn(validateTopic);
 
   useEffect(() => {
     try {
@@ -154,27 +153,10 @@ function Index() {
     setCopied(false);
 
     try {
-      const { kickoffId } = await kickoff({ data: { topic: t } });
+      const { result } = await validate({ data: { topic: t } });
+      if (cancelRef.current) return;
       saveHistory(t);
-      const startedAt = Date.now();
-
-      for (;;) {
-        if (cancelRef.current) return;
-        if (Date.now() - startedAt > TIMEOUT_MS) throw new Error("TIMEOUT:");
-
-        const s = await status({ data: { kickoffId } });
-        if (cancelRef.current) return;
-
-        if (s.state === "SUCCESS") {
-          setResult(parseRaw(s.raw ?? ""));
-          return;
-        }
-        if (s.state === "FAILURE" || s.state === "FAILED" || s.state === "ERROR") {
-          throw new Error(`CREW:${s.error ?? ""}`);
-        }
-
-        await new Promise((r) => setTimeout(r, POLL_MS));
-      }
+      setResult(parseRaw(result));
     } catch (err) {
       if (cancelRef.current) return;
       setErrorMessage(friendly(err instanceof Error ? err.message : ""));
