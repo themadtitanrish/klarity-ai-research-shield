@@ -10,6 +10,7 @@ dependencies = [
     "litellm>=1.95.0",
     "pyngrok>=8.1.2",
     "uvicorn>=0.52.1",
+    "tavily-python>=0.7.27",
 ]
 
 [build-system]
