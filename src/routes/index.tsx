@@ -3,7 +3,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { Sparkles, Copy, Check, X, RotateCcw, History } from "lucide-react";
 import klarityLogo from "@/assets/klarity-logo.png.asset.json";
-import { kickoffValidation, fetchValidationStatus } from "@/lib/crewai.functions";
+import { validateTopic } from "@/lib/crewai.functions";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -104,8 +104,7 @@ function Index() {
   const cancelRef = useRef(false);
   const resultsRef = useRef<HTMLDivElement | null>(null);
 
-  const kickoff = useServerFn(kickoffValidation);
-  const status = useServerFn(fetchValidationStatus);
+  const validate = useServerFn(validateTopic);
 
   useEffect(() => {
     try {
