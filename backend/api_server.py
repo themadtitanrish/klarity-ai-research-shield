@@ -1,9 +1,5 @@
 """
 Klarity API Server
-
-This wraps our CrewAI crew in a small web server (FastAPI) so any
-frontend (like our Lovable app) can call it over the internet.
-Uses Groq, which is completely free - no billing risk.
 """
 
 
@@ -75,10 +71,14 @@ credibility_task = Task(
 )
 
 synthesize_task = Task(
-    description="Using only sources scoring 6+, write a clear summary highlighting agreements and contradictions.",
-    expected_output="A clear summary paragraph based on credible sources",
+    description=(
+        "Using only sources scoring 6+, write a clear summary highlighting agreements and contradictions. "
+        "List source URLs as plain text (e.g. https://example.com), not markdown link syntax. "
+        "Do not repeat the source list twice."
+    ),
+    expected_output="A clear summary paragraph based on credible sources, with plain-text URLs, listed once",
     agent=synthesizer,
-    context=[classify_task, find_task, credibility_task]
+    context=[classify_task, find_task, credibility_task] 
 )
 
 crew = Crew(
