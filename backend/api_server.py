@@ -72,14 +72,22 @@ credibility_task = Task(
 
 synthesize_task = Task(
     description=(
-        "Using only sources scoring 6+, write a clear summary highlighting agreements and contradictions. "
-        "List source URLs as plain text (e.g. https://example.com), not markdown link syntax. "
-        "Do not repeat the source list twice."
+        "Using only sources scoring 6+, write a summary in EXACTLY this structure every time:\n"
+        "1. A synthesis paragraph (3-5 sentences) covering what is known about the topic, "
+        "including any agreements or contradictions between sources.\n"
+        "2. A blank line, then a heading 'Sources and Credibility Scores:'\n"
+        "3. A numbered list of every source used, each on its own line, in this exact format: "
+        "'Title - Score/10 - plain URL' (no markdown brackets, no parentheses around the URL).\n"
+        "Do not repeat this list. Do not omit the sources list even for niche topics."
     ),
-    expected_output="A clear summary paragraph based on credible sources, with plain-text URLs, listed once",
+    expected_output=(
+        "A short synthesis paragraph, followed by a 'Sources and Credibility Scores:' heading "
+        "and a numbered list of sources with title, score, and plain-text URL — in that exact structure, every time"
+    ),
     agent=synthesizer,
-    context=[classify_task, find_task, credibility_task] 
-)
+    context=[classify_task, find_task, credibility_task]
+) 
+
 
 crew = Crew(
     agents=[classifier, finder, credibility_checker, synthesizer],
