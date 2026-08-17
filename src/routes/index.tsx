@@ -2,7 +2,6 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useRef, useState, type FormEvent, type ReactNode } from "react";
 import { Sparkles, Copy, Check, X, RotateCcw, History } from "lucide-react";
-import klarityLogo from "@/assets/klarity-logo.png.asset.json";
 import { validateTopic } from "@/lib/crewai.functions";
 
 export const Route = createFileRoute("/")({
@@ -239,7 +238,7 @@ function Index() {
       <header className="relative mx-auto flex w-full max-w-5xl items-center justify-between px-6 py-3">
         <div className="flex items-center gap-2">
           <img
-            src={klarityLogo.url}
+            src="/klarity-logo.webp"
             alt="Klarity logo"
             className="h-20 w-auto select-none object-contain mix-blend-screen sm:h-24"
           />
