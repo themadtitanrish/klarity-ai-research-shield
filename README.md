@@ -1,21 +1,34 @@
-# Welcome to your Lovable project
+Klarity
 
-This project was built with [Lovable](https://lovable.dev).
+A research validation tool built with a multi-agent AI pipeline. Give it any research topic, from any field, science, history, arts, whatever, and it finds sources, checks how credible each one actually is, and gives you a summary you can trust instead of digging through search results yourself.
 
-## Build with Lovable
+How it works
+Four AI agents work through the topic in sequence:
+1. Classifies which academic field the topic belongs to
+2. Searches the web and finds relevant sources
+3. Scores each source's credibility, using standards that fit the field (peer review matters for science, primary sources matter for history)
+4. Synthesizes everything into one summary, using only the sources that scored well
 
-Open your project in the [Lovable editor](https://lovable.dev) and keep building.
+Project structure
+This repo has two parts:
+- Root folder: the frontend, built with React and Vite
+- backend/ folder: a FastAPI server running the CrewAI multi-agent pipeline, using Groq for inference and Tavily for web search
 
-- **Ship faster**: describe what you want to build and Lovable handles the code.
-- **Stay in sync**: connect the project to GitHub and every change made in Lovable is committed straight to your repository.
-- **Full ownership**: this code is yours. Push to your repository and your changes sync back into Lovable, ready for your next prompt.
+The backend is deployed separately on Render. The frontend calls it over a simple POST request and displays whatever comes back.
 
-## Development
-
-Prefer working locally? You need Node.js and npm — [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating).
-
-```sh
+Running it locally
+Frontend:
 git clone <this-repository-url>
+cd <repository-name>
+npm i
+npm run dev
+
+Backend (needs Python and uv):
+cd backend
+uv sync
+uv run uvicorn api_server:app --reload
+
+Still a work in progress. Next up is better source coverage and cleaning up how results are displayed.
 cd <repository-name>
 npm i
 npm run dev
