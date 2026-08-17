@@ -73,7 +73,7 @@ credibility_task = Task(
 synthesize_task = Task(
     description=(
         "Using only sources scoring 6+, write a summary in EXACTLY this structure every time:\n"
-        "1. A synthesis paragraph (3-5 sentences) covering what is known about the topic, "
+        "1. A synthesis paragraph (6-8 sentences, thorough and detailed) covering what is known about the topic, "
         "including any agreements or contradictions between sources.\n"
         "2. A blank line, then a heading 'Sources and Credibility Scores:'\n"
         "3. A numbered list of every source used, each on its own line, in this exact format: "
@@ -81,12 +81,12 @@ synthesize_task = Task(
         "Do not repeat this list. Do not omit the sources list even for niche topics."
     ),
     expected_output=(
-        "A short synthesis paragraph, followed by a 'Sources and Credibility Scores:' heading "
+        "A thorough synthesis paragraph, followed by a 'Sources and Credibility Scores:' heading "
         "and a numbered list of sources with title, score, and plain-text URL — in that exact structure, every time"
     ),
     agent=synthesizer,
     context=[classify_task, find_task, credibility_task]
-) 
+)
 
 
 crew = Crew(
