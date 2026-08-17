@@ -14,7 +14,10 @@ This repo has two parts:
 - Root folder: the frontend, built with React and Vite
 - backend/ folder: a FastAPI server running the CrewAI multi-agent pipeline, using Groq for inference and Tavily for web search
 
-The backend is deployed separately on Render. The frontend calls it over a simple POST request and displays whatever comes back.
+Deployment
+The frontend is deployed via Lovable. The backend is deployed separately on Render, and the frontend calls it over a simple POST request.
+
+The frontend was built with AI-assisted tooling (Lovable) for speed, then customized and connected to the backend I built myself. The backend, the CrewAI multi-agent pipeline, FastAPI server, and prompt design, is hand-written.
 
 Running it locally
 Frontend:
@@ -29,14 +32,3 @@ uv sync
 uv run uvicorn api_server:app --reload
 
 Still a work in progress. Next up is better source coverage and cleaning up how results are displayed.
-cd <repository-name>
-npm i
-npm run dev
-```
-
-## Built with
-
-- TanStack Start
-- TypeScript
-- React
-- Tailwind CSS
