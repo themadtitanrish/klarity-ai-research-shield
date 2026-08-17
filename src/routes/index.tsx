@@ -401,7 +401,7 @@ function Index() {
                     </div>
                     {s.description && (
                       <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-                        {s.description}
+                        {renderWithLinks(s.description)}
                       </p>
                     )}
                   </article>
