@@ -1,4 +1,4 @@
-Klarity
+I tried vibecoding for the first time and made Klarity
 
 A research validation tool built with a multi-agent AI pipeline. Give it any research topic, from any field, science, history, arts, whatever, and it finds sources, checks how credible each one actually is, and gives you a summary you can trust instead of digging through search results yourself.
 
