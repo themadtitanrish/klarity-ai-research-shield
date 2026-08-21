@@ -19,7 +19,7 @@ load_dotenv()
 
 
 
-groq_llm = LLM(model="groq/openai/gpt-oss-120b")
+groq_llm = LLM(model="groq/llama-3.1-8b-instant")
 search_tool = TavilySearchTool()
 
 classifier = Agent(
