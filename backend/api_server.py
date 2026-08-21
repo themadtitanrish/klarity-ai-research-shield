@@ -17,7 +17,9 @@ load_dotenv()
 
 # ---------- Set up the crew (same as before) ----------
 
-groq_llm = LLM(model="groq/llama-3.3-70b-versatile")
+
+
+groq_llm = LLM(model="groq/openai/gpt-oss-120b")
 search_tool = TavilySearchTool()
 
 classifier = Agent(
