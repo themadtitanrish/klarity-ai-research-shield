@@ -72,13 +72,28 @@ class ResilienceTests(unittest.TestCase):
 
     def test_api_success_and_validation(self):
         client = TestClient(api.app)
-        with patch.object(api, "build_crew", return_value=Mock(kickoff=Mock(return_value="Research result"))) as copy:
+        with patch.object(api, "build_crew", return_value=Mock(kickoff=Mock(return_value=SimpleNamespace(pydantic=api.ResearchReport(summary="Research result", sources=[]))))) as copy:
             response = client.post("/validate", json={"topic": "Astronomy"})
-            self.assertEqual(response.json(), {"result": "Research result"})
+            self.assertEqual(api.ResearchReport.model_validate_json(response.json()["result"]).summary, "Research result")
             self.assertEqual(response.status_code, 200)
             copy.return_value.kickoff.assert_called_once_with(inputs={"topic": "Astronomy"})
         self.assertEqual(client.post("/validate", json={"topic": "x"}).status_code, 422)
         self.assertEqual(client.post("/validate", json={"topic": "x" * 301}).status_code, 422)
+        self.assertFalse(api.research_lock.locked())
+
+    def test_scores_are_real_numbers(self):
+        from pydantic import ValidationError
+        for score in ["Score/10", "8/10", "8", 0, 11, True, 8.5]:
+            with self.subTest(score=score), self.assertRaises(ValidationError):
+                api.ScoredSource(title="Source", url="https://example.com", score=score, description="Reason")
+        source = api.ScoredSource(title="Source", url="https://example.com", score=8, description="Reason")
+        self.assertEqual(source.score, 8)
+
+    def test_invalid_report_is_not_returned_as_success(self):
+        result = SimpleNamespace(pydantic=None, raw='{"summary":"Test","sources":[{"title":"Source","url":"https://example.com","score":"Score/10","description":"Reason"}]}')
+        with patch.object(api, "build_crew", return_value=Mock(kickoff=Mock(return_value=result))):
+            response = TestClient(api.app).post("/validate", json={"topic": "Astronomy"})
+        self.assertEqual(response.status_code, 502)
         self.assertFalse(api.research_lock.locked())
 
     def test_busy_request_does_not_start_another_crew(self):

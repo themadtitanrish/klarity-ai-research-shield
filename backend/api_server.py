@@ -14,7 +14,7 @@ _crewai_cache.mark_cache_breakpoint = lambda msg: msg
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, HttpUrl, ValidationError
 from dotenv import load_dotenv
 from crewai import Agent, Task, Crew, Process, LLM
 from crewai_tools import TavilySearchTool
@@ -24,6 +24,18 @@ load_dotenv()
 
 logger = logging.getLogger("klarity")
 research_lock = Lock()
+
+
+class ScoredSource(BaseModel):
+    title: str = Field(min_length=1)
+    url: HttpUrl
+    score: int = Field(strict=True, ge=1, le=10, description="Actual numeric credibility rating from 1 to 10, never a placeholder")
+    description: str = Field(min_length=1, description="Reason for this source's credibility rating")
+
+
+class ResearchReport(BaseModel):
+    summary: str = Field(min_length=1)
+    sources: list[ScoredSource] = Field(description="Sources actually evaluated; empty if none could be verified")
 
 
 def retry_delay(error: RateLimitError, attempt: int) -> float:
@@ -133,19 +145,21 @@ def build_crew():
 
     synthesize_task = Task(
         description=(
-            "Using only sources scoring 6+, write a summary in EXACTLY this structure every time:\n"
-            "1. A synthesis paragraph (6-8 sentences, thorough and detailed) covering what is known about the topic, "
-            "including any agreements or contradictions between sources.\n"
-            "2. A blank line, then a heading 'Sources and Credibility Scores:'\n"
-            "3. A numbered list of every source used, each on its own line, in this exact format: "
-            "'Title - Score/10 - plain URL' (no markdown brackets, no parentheses around the URL).\n"
-            "Do not repeat this list. Do not omit the sources list even for niche topics."
+            "Return a JSON research report. The summary must be a 6-8 sentence synthesis using only "
+            "sources rated 6 or above, noting agreements and contradictions. "
+            "In sources, include each evaluated source's title, exact URL, numeric integer score "
+            "from 1 to 10, and a short description explaining that rating. "
+            "Copy the credibility checker's actual ratings; do not invent new scores. "
+            "The score field must contain a number such as 8, never 'Score/10', '8/10', or a placeholder. "
+            "Do not repeat the sources list inside summary. If no credible evidence was found, "
+            "say so explicitly rather than inventing sources or claims."
         ),
         expected_output=(
-            "A thorough synthesis paragraph, followed by a 'Sources and Credibility Scores:' heading "
-            "and a numbered list of sources with title, score, and plain-text URL — in that exact structure, every time"
+            "A JSON object with summary and sources. Each source has title, url, score (an integer 1-10), "
+            "and description (the reasoning for its rating)."
         ),
         agent=synthesizer,
+        output_pydantic=ResearchReport,
         context=[classify_task, find_task, credibility_task]
     )
 
@@ -187,7 +201,13 @@ def validate_topic(request: TopicRequest):
         raise HTTPException(429, "Research is busy. Please try again shortly.", headers={"Retry-After": "20"})
     try:
         result = build_crew().kickoff(inputs={"topic": request.topic})
-        return {"result": str(result)}
+        try:
+            report = result.pydantic
+            if not isinstance(report, ResearchReport):
+                report = ResearchReport.model_validate_json(result.raw)
+        except (ValidationError, ValueError, TypeError) as error:
+            raise HTTPException(502, "The research report contained invalid credibility scores. Please try again.") from error
+        return {"result": report.model_dump_json()}
     except RateLimitError as error:
         logger.warning("Groq cooldown exceeds the research retry budget")
         raise HTTPException(

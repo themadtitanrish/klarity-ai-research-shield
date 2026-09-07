@@ -26,7 +26,7 @@ export const Route = createFileRoute("/")({
   component: Index,
 });
 
-type Source = { title: string; score?: number | undefined; description?: string | undefined };
+type Source = { title: string; score?: number | undefined; description?: string | undefined; url?: string | undefined };
 type Parsed = {
   field?: string | undefined;
   sources: Source[];
@@ -104,6 +104,7 @@ function parseRaw(raw: string): Parsed {
             const description = o["description"] ?? o["summary"] ?? o["notes"];
             return {
               title,
+              url: typeof o["url"] === "string" && /^https?:\/\//i.test(o["url"]) ? o["url"] : undefined,
               score: typeof scoreVal === "number" ? scoreVal : undefined,
               description: typeof description === "string" ? description : undefined,
             } satisfies Source;
@@ -399,10 +400,15 @@ function Index() {
                         <span
                           className={`shrink-0 rounded-full border px-3 py-1 text-xs font-semibold tabular-nums ${scoreClasses(s.score)}`}
                         >
-                          {s.score.toFixed(1)}
+                          {s.score}/10
                         </span>
                       )}
                     </div>
+                    {s.url && (
+                      <a href={s.url} target="_blank" rel="noopener noreferrer" className="mt-2 inline-block text-sm underline underline-offset-2">
+                        Open source
+                      </a>
+                    )}
                     {s.description && (
                       <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
                         {renderWithLinks(s.description)}
