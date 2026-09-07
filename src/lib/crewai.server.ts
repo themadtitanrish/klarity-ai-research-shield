@@ -24,6 +24,10 @@ export async function validateTopic(topic: string): Promise<ValidateResult> {
     throw new Error("AUTH: The research service rejected the request.");
   }
 
+  if (response.status === 429) {
+    throw new Error("RATE_LIMIT: The research service is busy or cooling down.");
+  }
+
   const text = await response.text();
   if (!response.ok) {
     throw new Error(`SERVICE: Research service error (${response.status}). ${text.slice(0, 300)}`);

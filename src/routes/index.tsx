@@ -165,6 +165,8 @@ function Index() {
   }
 
   function friendly(message: string): string {
+    if (message.startsWith("RATE_LIMIT:"))
+      return "The research service is busy or its AI usage limit has been reached. Please wait a little before trying again.";
     if (message.startsWith("AUTH:"))
       return "The research service rejected our credentials. Please check the access token and try again.";
     if (message.startsWith("NETWORK:"))
@@ -184,7 +186,9 @@ function Index() {
     setCopied(false);
 
     try {
-      const { result } = await validate({ data: { topic: t } });
+      const response = await validate({ data: { topic: t } });
+      if ("error" in response) throw new Error(`${response.error}: Research could not complete.`);
+      const { result } = response;
       if (cancelRef.current) return;
       saveHistory(t);
       setResult(parseRaw(result));
@@ -275,6 +279,7 @@ function Index() {
             <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center">
               <input
                 id="topic"
+                maxLength={300}
                 value={topic}
                 onChange={(e) => setTopic(e.target.value)}
                 placeholder="Enter a topic, like 'protein content in crickets'"
